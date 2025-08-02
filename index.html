@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NExora - eBook Library</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+</head>
+<body class="bg-black text-white min-h-screen">
+    <!-- Header -->
+    <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button id="sidebar-toggle" class="md:hidden p-2 hover:bg-gray-800 rounded-lg transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                    
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-orangered rounded-lg flex items-center justify-center pulse-animation">
+                            <span class="text-xl">📚</span>
+                        </div>
+                        <div>
+                            <h1 class="text-xl sm:text-2xl font-bold text-orangered">NExora</h1>
+                            <p class="text-xs sm:text-sm text-gray-400">eBook Library</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <div class="hidden sm:flex items-center space-x-4 text-sm">
+                        <span class="text-gray-400">Books:</span>
+                        <span id="total-books" class="font-semibold text-orangered">0</span>
+                    </div>
+                    <button onclick="showStats()" class="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed md:relative inset-y-0 left-0 z-40 w-80 bg-gray-900 border-r border-gray-800 transform sidebar-closed md:sidebar-open transition-transform duration-300 ease-in-out">
+            <div class="p-6 h-full overflow-y-auto custom-scrollbar">
+                <!-- Search -->
+                <div class="mb-6">
+                    <div class="relative">
+                        <input type="text" id="search-input" placeholder="Search books, authors, genres..." class="w-full p-3 pl-10 bg-gray-800 border border-gray-700 rounded-lg search-input focus:outline-none">
+                        <svg class="absolute left-3 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    
+                    <!-- Search suggestions -->
+                    <div id="search-suggestions" class="hidden mt-2 bg-gray-800 border border-gray-700 rounded-lg max-h-40 overflow-y-auto custom-scrollbar">
+                        <!-- Suggestions will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="mb-6 grid grid-cols-2 gap-3">
+                    <div class="bg-gray-800 rounded-lg p-3 text-center">
+                        <div class="text-lg font-bold text-orangered" id="books-read">0</div>
+                        <div class="text-xs text-gray-400">Read</div>
+                    </div>
+                    <div class="bg-gray-800 rounded-lg p-3 text-center">
+                        <div class="text-lg font-bold text-blue-400" id="books-reading">0</div>
+                        <div class="text-xs text-gray-400">Reading</div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-3 text-orangered">Filters</h3>
+                    
+                    <!-- Genre Filter -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Genre</label>
+                        <select id="genre-filter" class="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-orangered focus:outline-none">
+                            <option value="">All Genres</option>
+                            <option value="Fiction">Fiction</option>
+                            <option value="Science">Science</option>
+                            <option value="Technology">Technology</option>
+                            <option value="History">History</option>
+                            <option value="Biography">Biography</option>
+                            <option value="Self-Help">Self-Help</option>
+                            <option value="Mystery">Mystery</option>
+                            <option value="Romance">Romance</option>
+                            <option value="Fantasy">Fantasy</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Status Filter -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Status</label>
+                        <select id="status-filter" class="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-orangered focus:outline-none">
+                            <option value="">All Books</option>
+                            <option value="unread">Not Started</option>
+                            <option value="reading">Currently Reading</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Favorites Filter -->
+                    <div class="mb-4">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="favorites-filter" class="rounded border-gray-700 bg-gray-800 text-orangered focus:ring-orangered">
+                            <span class="text-sm">Show Favorites Only</span>
+                        </label>
+                    </div>
+                    
+                    <button onclick="clearFilters()" class="w-full p-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
+                        Clear Filters
+                    </button>
+                </div>
+
+                <!-- Recent Searches -->
+                <div id="recent-searches-section" class="hidden">
+                    <h3 class="text-lg font-semibold mb-3 text-orangered">Recent Searches</h3>
+                    <div id="recent-searches" class="space-y-2">
+                        <!-- Recent searches will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 sm:p-6">
+            <!-- Genre Tags -->
+            <div class="mb-6 fade-in">
+                <div class="flex flex-wrap gap-2 sm:gap-3">
+                    <button onclick="filterByGenre('')" class="genre-tag px-3 py-1 text-white rounded-full text-sm font-medium">
+                        All
+                    </button>
+                    <button onclick="filterByGenre('Fiction')" class="genre-tag px-3 py-1 text-white rounded-full text-sm font-medium">
+                        Fiction
+                    </button>
+                    <button onclick="filterByGenre('Science')" class="genre-tag px-3 py-1 text-white rounded-full text-sm font-medium">
+                        Science
+                    </button>
+                    <button onclick="filterByGenre('Technology')" class="genre-tag px-3 py-1 text-white rounded-full text-sm font-medium">
+                        Technology
+                    </button>
+                    <button onclick="filterByGenre('History')" class="genre-tag px-3 py-1 text-white rounded-full text-sm font-medium">
+                        History
+                    </button>
+                </div>
+            </div>
+
+            <!-- Books Grid -->
+            <div class="mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+                    <h2 class="text-xl sm:text-2xl font-bold mb-2 sm:mb-0">
+                        <span id="section-title">All Books</span>
+                        <span id="results-count" class="text-sm text-gray-400 font-normal ml-2"></span>
+                    </h2>
+                    
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm text-gray-400">Sort by:</label>
+                        <select id="sort-select" class="p-2 bg-gray-800 border border-gray-700 rounded-lg focus:border-orangered focus:outline-none text-sm">
+                            <option value="title">Title</option>
+                            <option value="author">Author</option>
+                            <option value="genre">Genre</option>
+                            <option value="progress">Progress</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="books-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                    <!-- Books will be populated here -->
+                </div>
+                
+                <!-- No results message -->
+                <div id="no-results" class="hidden text-center py-12">
+                    <div class="text-6xl mb-4">📚</div>
+                    <h3 class="text-xl font-semibold mb-2">No books found</h3>
+                    <p class="text-gray-400">Try adjusting your search or filters</p>
+                </div>
+                
+                <!-- Loading indicator -->
+                <div id="loading" class="hidden text-center py-12">
+                    <div class="loading-spinner mx-auto mb-4"></div>
+                    <p class="text-gray-400">Loading books...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Book Details Modal -->
+    <div id="book-modal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-gray-900 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-6">
+                    <h2 id="modal-title" class="text-2xl font-bold text-orangered"></h2>
+                    <button onclick="closeModal()" class="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="md:col-span-1">
+                        <div id="modal-cover" class="w-full h-64 rounded-lg flex items-center justify-center text-4xl text-white font-bold mb-4">
+                            <!-- Book cover will be set here -->
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <button id="modal-read-btn" class="w-full bg-orangered hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                                Start Reading
+                            </button>
+                            
+                            <button id="modal-favorite-btn" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
+                                <span>❤️</span>
+                                <span>Add to Favorites</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <div class="space-y-4">
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Author</h3>
+                                <p id="modal-author" class="text-gray-300"></p>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Genre</h3>
+                                <span id="modal-genre" class="genre-tag px-3 py-1 text-white rounded-full text-sm font-medium"></span>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Pages</h3>
+                                <p id="modal-pages" class="text-gray-300"></p>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Reading Progress</h3>
+                                <div class="bg-gray-700 rounded-full h-3 mb-2">
+                                    <div id="modal-progress-bar" class="bg-orangered h-3 rounded-full progress-bar" style="width: 0%"></div>
+                                </div>
+                                <p id="modal-progress-text" class="text-sm text-gray-400">0% complete</p>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Description</h3>
+                                <p id="modal-description" class="text-gray-300 leading-relaxed"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Modal -->
+    <div id="stats-modal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-gray-900 rounded-2xl max-w-md w-full">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-orangered">Reading Statistics</h2>
+                    <button onclick="closeStatsModal()" class="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="bg-gray-800 rounded-lg p-4">
+                        <div class="flex justify-between items-center">
+                            <span>Total Books</span>
+                            <span id="stats-total" class="font-bold text-orangered">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-800 rounded-lg p-4">
+                        <div class="flex justify-between items-center">
+                            <span>Books Read</span>
+                            <span id="stats-read" class="font-bold text-green-400">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-800 rounded-lg p-4">
+                        <div class="flex justify-between items-center">
+                            <span>Currently Reading</span>
+                            <span id="stats-reading" class="font-bold text-blue-400">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-800 rounded-lg p-4">
+                        <div class="flex justify-between items-center">
+                            <span>Favorite Books</span>
+                            <span id="stats-favorites" class="font-bold text-pink-400">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-800 rounded-lg p-4">
+                        <div class="flex justify-between items-center">
+                            <span>Total Pages</span>
+                            <span id="stats-pages" class="font-bold text-purple-400">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let books = [];
+        let filteredBooks = [];
+        let recentSearches = [];
+        let currentBook = null;
+
+        // Sample books data
+        const sampleBooks = [
+            {
+                id: 1,
+                title: "1984",
+                author: "George Orwell",
+                genre: "Fiction",
+                pages: 328,
+                description: "A dystopian social science fiction novel that follows the life of Winston Smith, a low-ranking member of 'the Party', who is frustrated by the omnipresent eyes of the party.",
+                cover: "cover-fiction",
+                emoji: "👁️",
+                progress: 65,
+                status: "reading",
+                favorite: true
+            },
+            {
+                id: 2,
+                title: "The Martian",
+                author: "Andy Weir",
+                genre: "Science",
+                pages: 369,
+                description: "A science fiction novel about an astronaut stranded on Mars and his struggle to survive while awaiting rescue.",
+                cover: "cover-science",
+                emoji: "🚀",
+                progress: 100,
+                status: "completed",
+                favorite: true
+            },
+            {
+                id: 3,
+                title: "Clean Code",
+                author: "Robert C. Martin",
+                genre: "Technology",
+                pages: 464,
+                description: "A handbook of agile software craftsmanship that teaches the principles of writing clean, readable code.",
+                cover: "cover-technology",
+                emoji: "💻",
+                progress: 45,
+                status: "reading",
+                favorite: false
+            },
+            {
+                id: 4,
+                title: "Sapiens",
+                author: "Yuval Noah Harari",
+                genre: "History",
+                pages: 443,
+                description: "A brief history of humankind, exploring how Homo sapiens came to dominate the world.",
+                cover: "cover-history",
+                emoji: "🌍",
+                progress: 0,
+                status: "unread",
+                favorite: false
+            },
+            {
+                id: 5,
+                title: "Steve Jobs",
+                author: "Walter Isaacson",
+                genre: "Biography",
+                pages: 656,
+                description: "The exclusive biography of Steve Jobs, based on more than forty interviews with Jobs conducted over two years.",
+                cover: "cover-biography",
+                emoji: "🍎",
+                progress: 30,
+                status: "reading",
+                favorite: true
+            },
+            {
+                id: 6,
+                title: "Atomic Habits",
+                author: "James Clear",
+                genre: "Self-Help",
+                pages: 320,
+                description: "An easy and proven way to build good habits and break bad ones through tiny changes that deliver remarkable results.",
+                cover: "cover-selfhelp",
+                emoji: "⚡",
+                progress: 100,
+                status: "completed",
+                favorite: true
+            },
+            {
+                id: 7,
+                title: "The Girl with the Dragon Tattoo",
+                author: "Stieg Larsson",
+                genre: "Mystery",
+                pages: 590,
+                description: "A psychological thriller about a journalist and a hacker investigating a wealthy family's dark secrets.",
+                cover: "cover-mystery",
+                emoji: "🐉",
+                progress: 0,
+                status: "unread",
+                favorite: false
+            },
+            {
+                id: 8,
+                title: "Pride and Prejudice",
+                author: "Jane Austen",
+                genre: "Romance",
+                pages: 432,
+                description: "A romantic novel that follows the character development of Elizabeth Bennet and her relationship with Mr. Darcy.",
+                cover: "cover-romance",
+                emoji: "💕",
+                progress: 80,
+                status: "reading",
+                favorite: true
+            },
+            {
+                id: 9,
+                title: "The Hobbit",
+                author: "J.R.R. Tolkien",
+                genre: "Fantasy",
+                pages: 366,
+                description: "A fantasy novel about the adventures of Bilbo Baggins, a hobbit who embarks on an incredible journey.",
+                cover: "cover-fantasy",
+                emoji: "🧙‍♂️",
+                progress: 100,
+                status: "completed",
+                favorite: true
+            },
+            {
+                id: 10,
+                title: "Dune",
+                author: "Frank Herbert",
+                genre: "Science",
+                pages: 688,
+                description: "A science fiction epic set in the distant future amidst a feudal interstellar society.",
+                cover: "cover-science",
+                emoji: "🏜️",
+                progress: 25,
+                status: "reading",
+                favorite: false
+            },
+            {
+                id: 11,
+                title: "The Design of Everyday Things",
+                author: "Don Norman",
+                genre: "Technology",
+                pages: 368,
+                description: "A powerful primer on how design serves as the communication between object and user.",
+                cover: "cover-technology",
+                emoji: "🎨",
+                progress: 0,
+                status: "unread",
+                favorite: false
+            },
+            {
+                id: 12,
+                title: "Educated",
+                author: "Tara Westover",
+                genre: "Biography",
+                pages: 334,
+                description: "A memoir about a woman who grows up in a survivalist family and eventually earns a PhD from Cambridge.",
+                cover: "cover-biography",
+                emoji: "🎓",
+                progress: 60,
+                status: "reading",
+                favorite: true
+            },
+            {
+                id: 13,
+                title: "The 7 Habits of Highly Effective People",
+                author: "Stephen R. Covey",
+                genre: "Self-Help",
+                pages: 381,
+                description: "A business and self-help book that presents an approach to being effective in attaining goals.",
+                cover: "cover-selfhelp",
+                emoji: "📈",
+                progress: 100,
+                status: "completed",
+                favorite: false
+            },
+            {
+                id: 14,
+                title: "Gone Girl",
+                author: "Gillian Flynn",
+                genre: "Mystery",
+                pages: 432,
+                description: "A psychological thriller about a marriage gone terribly wrong and the disappearance of Amy Dunne.",
+                cover: "cover-mystery",
+                emoji: "🔍",
+                progress: 0,
+                status: "unread",
+                favorite: false
+            },
+            {
+                id: 15,
+                title: "Ready Player One",
+                author: "Ernest Cline",
+                genre: "Fiction",
+                pages: 374,
+                description: "A science fiction novel set in a dystopian future where people escape reality through a virtual world.",
+                cover: "cover-fiction",
+                emoji: "🎮",
+                progress: 90,
+                status: "reading",
+                favorite: true
+            }
+        ];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            books = [...sampleBooks];
+            filteredBooks = [...books];
+            
+            loadSavedData();
+            renderBooks();
+            updateStats();
+            setupEventListeners();
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search input
+            document.getElementById('search-input').addEventListener('input', handleSearch);
+            
+            // Filters
+            document.getElementById('genre-filter').addEventListener('change', applyFilters);
+            document.getElementById('status-filter').addEventListener('change', applyFilters);
+            document.getElementById('favorites-filter').addEventListener('change', applyFilters);
+            document.getElementById('sort-select').addEventListener('change', sortBooks);
+            
+            // Sidebar toggle
+            document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
+            
+            // Close modals on outside click
+            document.getElementById('book-modal').addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
+            });
+            
+            document.getElementById('stats-modal').addEventListener('click', function(e) {
+                if (e.target === this) closeStatsModal();
+            });
+            
+            // Close sidebar on mobile when clicking outside
+            document.addEventListener('click', function(e) {
+                const sidebar = document.getElementById('sidebar');
+                const toggle = document.getElementById('sidebar-toggle');
+                
+                if (window.innerWidth < 768 && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                    closeSidebar();
+                }
+            });
+        }
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('sidebar-open');
+            sidebar.classList.toggle('sidebar-closed');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.add('sidebar-closed');
+            sidebar.classList.remove('sidebar-open');
+        }
+
+        // Search functionality
+        function handleSearch(e) {
+            const query = e.target.value.toLowerCase().trim();
+            
+            if (query === '') {
+                filteredBooks = [...books];
+                hideSuggestions();
+            } else {
+                // Filter books based on search query
+                filteredBooks = books.filter(book => 
+                    book.title.toLowerCase().includes(query) ||
+                    book.author.toLowerCase().includes(query) ||
+                    book.genre.toLowerCase().includes(query) ||
+                    book.description.toLowerCase().includes(query)
+                );
+                
+                // Show search suggestions
+                showSuggestions(query);
+                
+                // Add to recent searches
+                if (query.length > 2) {
+                    addToRecentSearches(query);
+                }
+            }
+            
+            applyFilters();
+            updateSectionTitle(`Search results for "${query}"`);
+        }
+
+        // Show search suggestions
+        function showSuggestions(query) {
+            const suggestions = document.getElementById('search-suggestions');
+            const uniqueSuggestions = new Set();
+            
+            // Add matching titles and authors
+            books.forEach(book => {
+                if (book.title.toLowerCase().includes(query)) {
+                    uniqueSuggestions.add(book.title);
+                }
+                if (book.author.toLowerCase().includes(query)) {
+                    uniqueSuggestions.add(book.author);
+                }
+            });
+            
+            if (uniqueSuggestions.size > 0) {
+                suggestions.innerHTML = Array.from(uniqueSuggestions).slice(0, 5).map(suggestion => 
+                    `<div class="p-2 hover:bg-gray-700 cursor-pointer" onclick="selectSuggestion('${suggestion}')">${suggestion}</div>`
+                ).join('');
+                suggestions.classList.remove('hidden');
+            } else {
+                hideSuggestions();
+            }
+        }
+
+        function hideSuggestions() {
+            document.getElementById('search-suggestions').classList.add('hidden');
+        }
+
+        function selectSuggestion(suggestion) {
+            document.getElementById('search-input').value = suggestion;
+            hideSuggestions();
+            handleSearch({ target: { value: suggestion } });
+        }
+
+        // Recent searches
+        function addToRecentSearches(query) {
+            if (!recentSearches.includes(query)) {
+                recentSearches.unshift(query);
+                recentSearches = recentSearches.slice(0, 5); // Keep only 5 recent searches
+                updateRecentSearches();
+                saveData();
+            }
+        }
+
+        function updateRecentSearches() {
+            const section = document.getElementById('recent-searches-section');
+            const container = document.getElementById('recent-searches');
+            
+            if (recentSearches.length > 0) {
+                container.innerHTML = recentSearches.map(search => 
+                    `<button onclick="selectSuggestion('${search}')" class="w-full text-left p-2 bg-gray-800 hover:bg-gray-700 rounded text-sm transition-colors">${search}</button>`
+                ).join('');
+                section.classList.remove('hidden');
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+
+        // Filter functionality
+        function applyFilters() {
+            let filtered = [...filteredBooks];
+            
+            // Genre filter
+            const genreFilter = document.getElementById('genre-filter').value;
+            if (genreFilter) {
+                filtered = filtered.filter(book => book.genre === genreFilter);
+            }
+            
+            // Status filter
+            const statusFilter = document.getElementById('status-filter').value;
+            if (statusFilter) {
+                filtered = filtered.filter(book => book.status === statusFilter);
+            }
+            
+            // Favorites filter
+            const favoritesFilter = document.getElementById('favorites-filter').checked;
+            if (favoritesFilter) {
+                filtered = filtered.filter(book => book.favorite);
+            }
+            
+            renderBooks(filtered);
+        }
+
+        function clearFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('genre-filter').value = '';
+            document.getElementById('status-filter').value = '';
+            document.getElementById('favorites-filter').checked = false;
+            
+            filteredBooks = [...books];
+            renderBooks();
+            updateSectionTitle('All Books');
+            hideSuggestions();
+        }
+
+        function filterByGenre(genre) {
+            document.getElementById('genre-filter').value = genre;
+            applyFilters();
+            updateSectionTitle(genre ? `${genre} Books` : 'All Books');
+        }
+
+        // Sort functionality
+        function sortBooks() {
+            const sortBy = document.getElementById('sort-select').value;
+            
+            filteredBooks.sort((a, b) => {
+                switch (sortBy) {
+                    case 'title':
+                        return a.title.localeCompare(b.title);
+                    case 'author':
+                        return a.author.localeCompare(b.author);
+                    case 'genre':
+                        return a.genre.localeCompare(b.genre);
+                    case 'progress':
+                        return b.progress - a.progress;
+                    default:
+                        return 0;
+                }
+            });
+            
+            renderBooks(filteredBooks);
+        }
+
+        // Render books
+        function renderBooks(booksToRender = filteredBooks) {
+            const grid = document.getElementById('books-grid');
+            const noResults = document.getElementById('no-results');
+            const resultsCount = document.getElementById('results-count');
+            
+            if (booksToRender.length === 0) {
+                grid.classList.add('hidden');
+                noResults.classList.remove('hidden');
+                resultsCount.textContent = '';
+            } else {
+                grid.classList.remove('hidden');
+                noResults.classList.add('hidden');
+                resultsCount.textContent = `(${booksToRender.length} books)`;
+                
+                grid.innerHTML = booksToRender.map(book => createBookCard(book)).join('');
+            }
+        }
+
+        // Create book card
+        function createBookCard(book) {
+            const statusIcon = {
+                'unread': '📖',
+                'reading': '📚',
+                'completed': '✅'
+            };
+            
+            const statusColor = {
+                'unread': 'text-gray-400',
+                'reading': 'text-blue-400',
+                'completed': 'text-green-400'
+            };
+            
+            return `
+                <div class="book-card bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-orangered transition-all duration-300">
+                    <div class="${book.cover} h-48 flex items-center justify-center text-4xl text-white font-bold relative">
+                        <span>${book.emoji}</span>
+                        <button onclick="toggleFavorite(${book.id})" class="absolute top-3 right-3 p-2 bg-black bg-opacity-50 rounded-full hover:bg-opacity-70 transition-all ${book.favorite ? 'heart-bounce' : ''}">
+                            ${book.favorite ? '❤️' : '🤍'}
+                        </button>
+                    </div>
+                    
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1 text-white truncate">${book.title}</h3>
+                        <p class="text-gray-400 text-sm mb-2 truncate">by ${book.author}</p>
+                        
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="genre-tag px-2 py-1 text-xs rounded-full">${book.genre}</span>
+                            <span class="${statusColor[book.status]} text-xs flex items-center space-x-1">
+                                <span>${statusIcon[book.status]}</span>
+                                <span>${book.status.charAt(0).toUpperCase() + book.status.slice(1)}</span>
+                            </span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="flex justify-between text-xs text-gray-400 mb-1">
+                                <span>Progress</span>
+                                <span>${book.progress}%</span>
+                            </div>
+                            <div class="bg-gray-700 rounded-full h-2">
+                                <div class="bg-orangered h-2 rounded-full progress-bar" style="width: ${book.progress}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button onclick="openBook(${book.id})" class="flex-1 bg-orangered hover:bg-red-600 text-white text-sm font-bold py-2 px-3 rounded-lg transition-colors">
+                                ${book.status === 'unread' ? 'Start' : book.status === 'completed' ? 'Read Again' : 'Continue'}
+                            </button>
+                            <button onclick="showBookDetails(${book.id})" class="p-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Book actions
+        function openBook(bookId) {
+            const book = books.find(b => b.id === bookId);
+            if (book) {
+                if (book.status === 'unread') {
+                    book.status = 'reading';
+                    book.progress = Math.max(book.progress, 5); // Start with at least 5%
+                } else if (book.status === 'reading') {
+                    // Simulate reading progress
+                    book.progress = Math.min(book.progress + 10, 100);
+                    if (book.progress === 100) {
+                        book.status = 'completed';
+                    }
+                }
+                
+                renderBooks();
+                updateStats();
+                saveData();
+                showNotification(`${book.status === 'completed' ? 'Finished' : 'Reading'} "${book.title}"`, 'success');
+            }
+        }
+
+        function toggleFavorite(bookId) {
+            const book = books.find(b => b.id === bookId);
+            if (book) {
+                book.favorite = !book.favorite;
+                renderBooks();
+                updateStats();
+                saveData();
+                
+                const heartBtn = event.target;
+                heartBtn.classList.add('heart-bounce');
+                setTimeout(() => heartBtn.classList.remove('heart-bounce'), 300);
+                
+                showNotification(`${book.favorite ? 'Added to' : 'Removed from'} favorites`, 'info');
+            }
+        }
+
+        function showBookDetails(bookId) {
+            const book = books.find(b => b.id === bookId);
+            if (book) {
+                currentBook = book;
+                
+                document.getElementById('modal-title').textContent = book.title;
+                document.getElementById('modal-author').textContent = book.author;
+                document.getElementById('modal-genre').textContent = book.genre;
+                document.getElementById('modal-pages').textContent = `${book.pages} pages`;
+                document.getElementById('modal-description').textContent = book.description;
+                
+                const modalCover = document.getElementById('modal-cover');
+                modalCover.className = `w-full h-64 rounded-lg flex items-center justify-center text-4xl text-white font-bold mb-4 ${book.cover}`;
+                modalCover.textContent = book.emoji;
+                
+                const progressBar = document.getElementById('modal-progress-bar');
+                progressBar.style.width = `${book.progress}%`;
+                document.getElementById('modal-progress-text').textContent = `${book.progress}% complete`;
+                
+                const readBtn = document.getElementById('modal-read-btn');
+                readBtn.textContent = book.status === 'unread' ? 'Start Reading' : 
+                                   book.status === 'completed' ? 'Read Again' : 'Continue Reading';
+                readBtn.onclick = () => {
+                    openBook(bookId);
+                    closeModal();
+                };
+                
+                const favoriteBtn = document.getElementById('modal-favorite-btn');
+                favoriteBtn.innerHTML = `<span>${book.favorite ? '❤️' : '🤍'}</span><span>${book.favorite ? 'Remove from Favorites' : 'Add to Favorites'}</span>`;
+                favoriteBtn.onclick = () => {
+                    toggleFavorite(bookId);
+                    favoriteBtn.innerHTML = `<span>${book.favorite ? '🤍' : '❤️'}</span><span>${book.favorite ? 'Add to Favorites' : 'Remove from Favorites'}</span>`;
+                };
+                
+                document.getElementById('book-modal').classList.remove('hidden');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('book-modal').classList.add('hidden');
+            currentBook = null;
+        }
+
+        // Stats functionality
+        function updateStats() {
+            const totalBooks = books.length;
+            const booksRead = books.filter(b => b.status === 'completed').length;
+            const booksReading = books.filter(b => b.status === 'reading').length;
+            const favoriteBooks = books.filter(b => b.favorite).length;
+            const totalPages = books.reduce((sum, book) => sum + book.pages, 0);
+            
+            document.getElementById('total-books').textContent = totalBooks;
+            document.getElementById('books-read').textContent = booksRead;
+            document.getElementById('books-reading').textContent = booksReading;
+            
+            // Update stats modal
+            document.getElementById('stats-total').textContent = totalBooks;
+            document.getElementById('stats-read').textContent = booksRead;
+            document.getElementById('stats-reading').textContent = booksReading;
+            document.getElementById('stats-favorites').textContent = favoriteBooks;
+            document.getElementById('stats-pages').textContent = totalPages.toLocaleString();
+        }
+
+        function showStats() {
+            document.getElementById('stats-modal').classList.remove('hidden');
+        }
+
+        function closeStatsModal() {
+            document.getElementById('stats-modal').classList.add('hidden');
+        }
+
+        // Utility functions
+        function updateSectionTitle(title) {
+            document.getElementById('section-title').textContent = title;
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 fade-in ${
+                type === 'success' ? 'bg-green-600' : 
+                type === 'error' ? 'bg-red-600' : 
+                type === 'info' ? 'bg-blue-600' : 'bg-gray-600'
+            }`;
+            
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+            notification.innerHTML = `<div class="flex items-center space-x-2"><span>${icon}</span><span>${message}</span></div>`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Data persistence
+        function saveData() {
+            localStorage.setItem('nexora-books', JSON.stringify(books));
+            localStorage.setItem('nexora-recent-searches', JSON.stringify(recentSearches));
+        }
+
+        function loadSavedData() {
+            const savedBooks = localStorage.getItem('nexora-books');
+            const savedSearches = localStorage.getItem('nexora-recent-searches');
+            
+            if (savedBooks) {
+                const parsedBooks = JSON.parse(savedBooks);
+                // Merge saved data with sample books, keeping user progress
+                books = books.map(book => {
+                    const savedBook = parsedBooks.find(b => b.id === book.id);
+                    return savedBook ? { ...book, ...savedBook } : book;
+                });
+            }
+            
+            if (savedSearches) {
+                recentSearches = JSON.parse(savedSearches);
+                updateRecentSearches();
+            }
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'968c25e52194f6b5',t:'MTc1NDEyMjc0Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
